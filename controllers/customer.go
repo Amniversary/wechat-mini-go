@@ -9,6 +9,7 @@ import (
 
 	"github.com/Amniversary/wechat-mini-go/config/mysql"
 	"gopkg.in/chanxuehong/wechat.v2/mp/message/custom"
+	"github.com/Amniversary/wechat-mini-go/server"
 )
 
 type Worker struct {
@@ -29,7 +30,7 @@ type Count struct {
 }
 
 type Customer struct {
-	AppId   int    `json:"app_id"`
+	AppId   int64  `json:"app_id"`
 	KeyWord string `json:"key_word"`
 	TaskId  int64  `json:"task_id"`
 	MsgData []Msg  `json:"msg_data"`
@@ -49,12 +50,17 @@ type Msg struct {
 //TODO: 客服消息
 func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) {
 	req := &Customer{}
+	rsp := &server.Response{Code:server.RESPONSE_ERROR}
+	defer func() {
+		server.EchoJson(writer, http.StatusOK, rsp)
+	}()
 	if err := json.NewDecoder(request.Body).Decode(req); err != nil {
 		log.Printf("json decode err: %v", err)
+		rsp.Msg = server.ErrMsg
 		return
 	}
 	w.index = make(map[int64]*Count)
-	w.index[req.TaskId] = &Count{
+	w.index[req.TaskId+000+req.AppId] = &Count{
 		Success: 0,
 		Failed:  0,
 		Total:   0,
@@ -62,19 +68,22 @@ func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) 
 	auth, ok := mysql.GetAppInfo(req.AppId)
 	if !ok {
 		log.Printf("CustomerMsg getAppInfo AppId:[%d].", req.AppId)
+		rsp.Msg = server.ErrMsg
 		return
 	}
 
 	list, ok := mysql.GetUserList(auth.RecordId)
 	if !ok {
 		log.Printf("CustomerMsg getUserList AppId:[%d].", auth.RecordId)
+		rsp.Msg = server.ErrMsg
 		return
 	}
-	w.index[req.TaskId].Total = len(list)
+	w.index[req.TaskId+000+req.AppId].Total = len(list)
 	for _, v := range list {
 		Client := NewUsers(v, req)
 		w.Client <- Client
 	}
+	rsp.Code = server.RESPONSE_OK
 }
 
 //TODO: 发送客服消息
@@ -100,18 +109,18 @@ func (w *Worker) SendCustomer(msg *Customer) {
 	}
 	if err != nil {
 		w.Lock.Lock()
-		w.index[msg.TaskId].Failed ++
+		w.index[msg.TaskId+000+msg.AppId].Failed ++
 		w.Lock.Unlock()
 		log.Printf("send customer msg err: %v", err)
-	} else  {
+	} else {
 		w.Lock.Lock()
-		w.index[msg.TaskId].Success ++
+		w.index[msg.TaskId+000+msg.AppId].Success ++
 		w.Lock.Unlock()
 	}
-	log.Printf("taskId: [%v], success: [%v], failed: [%v], totel: [%v]", msg.TaskId, w.index[msg.TaskId].Success, w.index[msg.TaskId].Failed, w.index[msg.TaskId].Total)
-	count := w.index[msg.TaskId].Success + w.index[msg.TaskId].Failed
-	if count >= w.index[msg.TaskId].Total {
-		err := mysql.SaveTask(msg.AppId, msg.TaskId, w.index[msg.TaskId].Total, w.index[msg.TaskId].Success)
+	log.Printf("taskId: [%v], success: [%v], failed: [%v], totel: [%v]", msg.TaskId, w.index[msg.TaskId+000+msg.AppId].Success, w.index[msg.TaskId+000+msg.AppId].Failed, w.index[msg.TaskId+000+msg.AppId].Total)
+	count := w.index[msg.TaskId+000+msg.AppId].Success + w.index[msg.TaskId+000+msg.AppId].Failed
+	if count >= w.index[msg.TaskId+000+msg.AppId].Total {
+		err := mysql.SaveTask(msg.AppId, msg.TaskId, w.index[msg.TaskId+000+msg.AppId].Total, w.index[msg.TaskId+000+msg.AppId].Success)
 		if err != nil {
 			log.Printf("saveTask err: %v", err)
 			return
