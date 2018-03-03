@@ -24,7 +24,7 @@ func NewConfig() *Config {
 	c := new(Config)
 
 	c.DBInfo.Host = "127.0.0.1"
-	c.DBInfo.User = "root"
+	c.DBInfo.User = "hebihan"
 	c.DBInfo.Pass = "root"
 	c.DBInfo.DBName = "realdb"
 
