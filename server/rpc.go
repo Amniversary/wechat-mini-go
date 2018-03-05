@@ -9,17 +9,7 @@ import (
 
 const (
 	AccessName = "WeChatMini"
-	RESPONSE_OK = 0
-	RESPONSE_ERROR = 1
-	ErrMsg = "系统错误"
 )
-
-
-type Response struct {
-	Code int64       `json:"code"`
-	Msg  string      `json:"msg,omitempty"`
-	Data interface{} `json:"data,omitempty"`
-}
 
 func (s *Server) rpc(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {

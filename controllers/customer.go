@@ -9,7 +9,7 @@ import (
 
 	"github.com/Amniversary/wechat-mini-go/config/mysql"
 	"gopkg.in/chanxuehong/wechat.v2/mp/message/custom"
-	"github.com/Amniversary/wechat-mini-go/server"
+	"github.com/Amniversary/wechat-mini-go/config"
 )
 
 type Worker struct {
@@ -48,15 +48,15 @@ type Msg struct {
 }
 
 //TODO: 客服消息
-func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) {
+func (w *Worker)CustomerMsg(writer http.ResponseWriter, request *http.Request) {
 	req := &Customer{}
-	rsp := &server.Response{Code:server.RESPONSE_ERROR}
+	rsp := &config.Response{Code:config.RESPONSE_ERROR}
 	defer func() {
-		server.EchoJson(writer, http.StatusOK, rsp)
+		EchoJson(writer, http.StatusOK, rsp)
 	}()
 	if err := json.NewDecoder(request.Body).Decode(req); err != nil {
 		log.Printf("json decode err: %v", err)
-		rsp.Msg = server.ErrMsg
+		rsp.Msg = config.ErrMsg
 		return
 	}
 	w.index = make(map[int64]*Count)
@@ -68,14 +68,14 @@ func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) 
 	auth, ok := mysql.GetAppInfo(req.AppId)
 	if !ok {
 		log.Printf("CustomerMsg getAppInfo AppId:[%d].", req.AppId)
-		rsp.Msg = server.ErrMsg
+		rsp.Msg = config.ErrMsg
 		return
 	}
 
 	list, ok := mysql.GetUserList(auth.RecordId)
 	if !ok {
 		log.Printf("CustomerMsg getUserList AppId:[%d].", auth.RecordId)
-		rsp.Msg = server.ErrMsg
+		rsp.Msg = config.ErrMsg
 		return
 	}
 	w.index[req.TaskId+000+req.AppId].Total = len(list)
@@ -83,7 +83,7 @@ func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) 
 		Client := NewUsers(v, req)
 		w.Client <- Client
 	}
-	rsp.Code = server.RESPONSE_OK
+	rsp.Code = config.RESPONSE_OK
 }
 
 //TODO: 发送客服消息
@@ -141,4 +141,14 @@ func NewUsers(v mysql.ClientList, req *Customer) *Customer {
 	Client.KeyWord = req.KeyWord
 	Client.MsgData = req.MsgData
 	return Client
+}
+
+// TODO @ 输出Json数据
+func EchoJson(w http.ResponseWriter, status int, data interface{}) error {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "x-requested-with,content-type,servername,methodname,userid,msgid")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(data)
 }
