@@ -79,10 +79,12 @@ func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 	w.index[req.TaskId+000+req.AppId].Total = len(list)
-	for _, v := range list {
-		Client := NewUsers(v, req)
-		w.Client <- Client
-	}
+	go func() {
+		for _, v := range list {
+			Client := NewUsers(v, req)
+			w.Client <- Client
+		}
+	}()
 	rsp.Code = config.RESPONSE_OK
 }
 
@@ -137,6 +139,7 @@ func (w *Worker) SendCustomer(msg *Customer) {
 	//text := custom.NewText(msg.OpenId,  "测试测试", "")
 	//log.Printf("text : %v", text)
 }
+
 
 func NewUsers(v mysql.ClientList, req *Customer) *Customer {
 	Client := new(Customer)
