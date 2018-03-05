@@ -59,7 +59,6 @@ func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) 
 		rsp.Msg = config.ErrMsg
 		return
 	}
-	w.index = make(map[int64]*Count)
 	w.index[req.TaskId+000+req.AppId] = &Count{
 		Success: 0,
 		Failed:  0,
