@@ -112,7 +112,7 @@ func (w *Worker) SendCustomer(msg *Customer) {
 		w.Lock.Lock()
 		w.index[msg.TaskId+000+msg.AppId].Failed ++
 		w.Lock.Unlock()
-		log.Printf("send customer msg err: %v", err)
+		log.Printf("send customer err: [%v], %v", msg.NickName ,err)
 	} else {
 		w.Lock.Lock()
 		w.index[msg.TaskId+000+msg.AppId].Success ++
