@@ -48,9 +48,9 @@ type Msg struct {
 }
 
 //TODO: 客服消息
-func (w *Worker)CustomerMsg(writer http.ResponseWriter, request *http.Request) {
+func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) {
 	req := &Customer{}
-	rsp := &config.Response{Code:config.RESPONSE_ERROR}
+	rsp := &config.Response{Code: config.RESPONSE_ERROR}
 	defer func() {
 		EchoJson(writer, http.StatusOK, rsp)
 	}()
@@ -78,7 +78,7 @@ func (w *Worker)CustomerMsg(writer http.ResponseWriter, request *http.Request) {
 		rsp.Msg = config.ErrMsg
 		return
 	}
-	w.index[req.TaskId+000+req.AppId].Total = len(list)
+	w.index[req.TaskId+000+req.AppId].Total = 1000 //len(list)
 	for _, v := range list {
 		Client := NewUsers(v, req)
 		w.Client <- Client
@@ -117,7 +117,14 @@ func (w *Worker) SendCustomer(msg *Customer) {
 		w.index[msg.TaskId+000+msg.AppId].Success ++
 		w.Lock.Unlock()
 	}
-	log.Printf("taskId: [%v], success: [%v], failed: [%v], totel: [%v]", msg.TaskId, w.index[msg.TaskId+000+msg.AppId].Success, w.index[msg.TaskId+000+msg.AppId].Failed, w.index[msg.TaskId+000+msg.AppId].Total)
+	log.Printf("taskId: [%v], success: [%v], failed: [%v], totel: [%v], userName: [%v], openId: [%v]",
+		msg.TaskId,
+		w.index[msg.TaskId+000+msg.AppId].Success,
+		w.index[msg.TaskId+000+msg.AppId].Failed,
+		w.index[msg.TaskId+000+msg.AppId].Total,
+		msg.NickName,
+		msg.OpenId,
+	)
 	count := w.index[msg.TaskId+000+msg.AppId].Success + w.index[msg.TaskId+000+msg.AppId].Failed
 	if count >= w.index[msg.TaskId+000+msg.AppId].Total {
 		err := mysql.SaveTask(msg.AppId, msg.TaskId, w.index[msg.TaskId+000+msg.AppId].Total, w.index[msg.TaskId+000+msg.AppId].Success)
