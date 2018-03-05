@@ -70,7 +70,6 @@ func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) 
 		rsp.Msg = config.ErrMsg
 		return
 	}
-
 	list, ok := mysql.GetUserList(auth.RecordId)
 	if !ok {
 		log.Printf("CustomerMsg getUserList AppId:[%d].", auth.RecordId)
@@ -93,6 +92,7 @@ func (w *Worker) SendCustomer(msg *Customer) {
 	if !ok {
 		return
 	}
+
 	var err error
 	for _, v := range msg.MsgData {
 		var rst interface{}
@@ -112,7 +112,7 @@ func (w *Worker) SendCustomer(msg *Customer) {
 		w.Lock.Lock()
 		w.index[msg.TaskId+000+msg.AppId].Failed ++
 		w.Lock.Unlock()
-		log.Printf("send customer err: [%v], %v", msg.NickName ,err)
+		log.Printf("send customer err: [%v], %v", msg.NickName, err)
 	} else {
 		w.Lock.Lock()
 		w.index[msg.TaskId+000+msg.AppId].Success ++
