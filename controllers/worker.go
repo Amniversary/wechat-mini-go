@@ -57,12 +57,12 @@ func NewClient() *Worker {
 }
 
 func Send(msg interface{}, auth *mysql.WcAuthorizationList) (err error) {
-	isRefresh := false
+	isRefresh := false   //TODO: 重试发送
 RETRY:
 	var result Error
-	Url := incompleteURL + auth.AuthorizerAccessToken
+	Url := incompleteURL + auth.AuthorizerAccessToken	//TODO: 请求客服消息 url
 	client := &http.Client{}
-	buf := bytes.NewBuffer([]byte{})
+	buf := bytes.NewBuffer([]byte{})  //TODO: 使用json.Marshal 会使特殊字符unicode
 	Json := json.NewEncoder(buf)
 	Json.SetEscapeHTML(false)
 	Json.Encode(msg)
@@ -90,14 +90,14 @@ RETRY:
 		log.Printf("ioutil realAll err: %v", err)
 		return
 	}
-	if err := json.Unmarshal(rspBody, &result); err != nil {
+	if err := json.Unmarshal(rspBody, &result); err != nil {	//TODO: json.decode
 		log.Printf("json unmarshal err : %v", err)
 		return err
 	}
 	switch result.ErrCode {
 	case ErrCodeOK:
 		return
-	case ErrCodeInvalidCredential, ErrCodeAccessTokenExpired:
+	case ErrCodeInvalidCredential, ErrCodeAccessTokenExpired:	//TODO: token过期处理(异常)
 		if !isRefresh {
 			isRefresh = true
 			Auth, ok := mysql.GetAppInfo(auth.RecordId)
@@ -108,7 +108,7 @@ RETRY:
 			goto RETRY
 		}
 		return fmt.Errorf("ErrCode: [%v], ErrMsg: [%v]", result.ErrCode, result.ErrMsg)
-	case ErrCodeUserTimeOut:
+	case ErrCodeUserTimeOut:	//TODO:	用户交互超时
 		return fmt.Errorf("ErrCodeUserTimeOut ErrCode : [%v], ErrMsg: [%v]", result.ErrCode, result.ErrMsg)
 	default:
 		return fmt.Errorf("ErrCode: [%v], ErrMsg: [%v]", result.ErrCode, result.ErrMsg)

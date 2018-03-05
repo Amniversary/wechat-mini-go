@@ -4,11 +4,11 @@ import (
 	"log"
 	"strconv"
 	"time"
-	//"github.com/jinzhu/now"
+	"github.com/jinzhu/now"
 )
 
 type WcAuthorizationList struct {
-	RecordId               int64    `json:"record_id"`
+	RecordId               int64  `json:"record_id"`
 	AuthorizerAppid        string `json:"authorizer_appid"`
 	AuthorizerAccessToken  string `json:"authorizer_access_token"`
 	AuthorizerRefreshToken string `json:"authorizer_refresh_token"`
@@ -19,13 +19,13 @@ type ClientList struct {
 	ClientId int64  `json:"client_id"`
 	OpenId   string `json:"open_id"`
 	NickName string `json:"nick_name"`
-	AppId    int64    `json:"app_id"`
+	AppId    int64  `json:"app_id"`
 }
 
 type CustomerStatistics struct {
 	Id         int64 `json:"id"`
 	TaskId     int64 `json:"task_id"`
-	AppId      int64   `json:"app_id"`
+	AppId      int64 `json:"app_id"`
 	UserCount  int   `json:"user_count"`
 	UserNum    int   `json:"user_num"`
 	CreateTime int64 `json:"create_time"`
@@ -57,26 +57,27 @@ func GetAppInfo(recordId int64) (*WcAuthorizationList, bool) {
 //TODO: 获取用户列表
 func GetUserList(recordId int64) ([]ClientList, bool) {
 	var list []ClientList
-	//nTime := time.Now().Unix()
-	//statTime := nTime - (86400 * 2)
+	nTime := time.Now().Unix()
+	statTime := nTime - (86400 * 2)
 	num := strconv.FormatInt(recordId, 10)
 	err := db.Table("wc_client" + num).
 		Select("client_id, open_id, nick_name, app_id").
-			Where("open_id = ?", "ol_EGvw_V3rXYILgc7QEOVVBrxwg").Find(&list).Error
-		//Where("update_time between ? and ?", statTime, now.EndOfHour().Unix()).Find(&list).Error
+		//Where("open_id = ?", "ol_EGvw_V3rXYILgc7QEOVVBrxwg").Find(&list).Error
+	Where("update_time between ? and ?", statTime, now.EndOfHour().Unix()).Find(&list).Error
 	if err != nil {
 		log.Printf("select UserList err : %v", err)
 		return nil, false
 	}
 	return list, true
 }
+
 //TODO: 保存任务信息
 func SaveTask(AppId int64, TaskId int64, count int, num int) (err error) {
 	task := &CustomerStatistics{
-		AppId:     AppId,
-		TaskId:    TaskId,
-		UserCount: count,
-		UserNum:   num,
+		AppId:      AppId,
+		TaskId:     TaskId,
+		UserCount:  count,
+		UserNum:    num,
 		CreateTime: time.Now().Unix(),
 	}
 	if err := db.Create(&task).Error; err != nil {
