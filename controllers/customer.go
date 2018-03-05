@@ -78,7 +78,7 @@ func (w *Worker) CustomerMsg(writer http.ResponseWriter, request *http.Request) 
 		rsp.Msg = config.ErrMsg
 		return
 	}
-	w.index[req.TaskId+000+req.AppId].Total = 1000 //len(list)
+	w.index[req.TaskId+000+req.AppId].Total = len(list)
 	for _, v := range list {
 		Client := NewUsers(v, req)
 		w.Client <- Client
