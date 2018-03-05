@@ -119,8 +119,9 @@ func (w *Worker) SendCustomer(msg *Customer) {
 		w.index[msg.TaskId+000+msg.AppId].Success ++
 		w.Lock.Unlock()
 	}
-	log.Printf("taskId: [%v], success: [%v], failed: [%v], totel: [%v], userName: [%v], openId: [%v]",
+	log.Printf("taskId: [%v], appId: [%v], success: [%v], failed: [%v], totel: [%v], userName: [%v], openId: [%v]",
 		msg.TaskId,
+		msg.AppId,
 		w.index[msg.TaskId+000+msg.AppId].Success,
 		w.index[msg.TaskId+000+msg.AppId].Failed,
 		w.index[msg.TaskId+000+msg.AppId].Total,
@@ -134,12 +135,12 @@ func (w *Worker) SendCustomer(msg *Customer) {
 			log.Printf("saveTask err: %v", err)
 			return
 		}
+		log.Printf("customer task is over taskId: [%v], appId: [%v] ", msg.TaskId, msg.AppId)
 	}
 	return
 	//text := custom.NewText(msg.OpenId,  "测试测试", "")
 	//log.Printf("text : %v", text)
 }
-
 
 func NewUsers(v mysql.ClientList, req *Customer) *Customer {
 	Client := new(Customer)
