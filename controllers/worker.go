@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DefaultWorker = 1024
+	DefaultWorker = 512
 	incompleteURL = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token="
 
 	ErrCodeOK                 = 0
