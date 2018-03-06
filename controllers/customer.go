@@ -134,7 +134,7 @@ func (w *Worker) SendCustomer(msg *Customer) {
 			log.Printf("saveTask err: %v", err)
 			return
 		}
-		log.Printf("customer task is over taskId: [%v], appId: [%v] ", msg.TaskId, msg.AppId)
+		log.Printf("customer task is over taskId: [%v], appId: [%v], AppName: [%v]", msg.TaskId, msg.AppId, auth.NickName)
 	}
 	return
 	//text := custom.NewText(msg.OpenId,  "测试测试", "")
