@@ -100,7 +100,7 @@ func (w *Worker) SendCustomer(msg *Customer) {
 	//log.Printf("text : %v", text)
 }
 
-func (w *Worker) NewUsers(v *mysql.ClientList, req *Customer) *Customer {
+func (w *Worker) NewUsers(v mysql.ClientList, req *Customer) *Customer {
 	Client := new(Customer)
 	Client.OpenId = v.OpenId
 	Client.NickName = v.NickName
