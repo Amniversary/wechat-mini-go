@@ -29,7 +29,7 @@ func (s *Server) rpc(w http.ResponseWriter, r *http.Request) {
 
 	switch methodName {
 	case "customerMsg":
-		s.work.CustomerMsg(w, r)
+		s.CustomerMsg(w, r)
 	}
 }
 

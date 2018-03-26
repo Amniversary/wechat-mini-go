@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	DefaultWorker = 512
-	incompleteURL = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token="
+	DefaultWorker     = 512
+	DefaultTaskWorker = 16
+	incompleteURL     = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token="
 
 	ErrCodeOK                 = 0
 	ErrCodeInvalidCredential  = 40001 // access_token 过期错误码
@@ -34,6 +35,13 @@ func (w *Worker) initWorker() {
 	}
 }
 
+//func (w *Worker) initTaskWorker() {
+//	log.Printf("init Task Workers.")
+//	for i := 0; i < DefaultTaskWorker; i++ {
+//
+//	}
+//}
+
 func (w *Worker) runWorkers() {
 	for {
 		select {
@@ -47,10 +55,12 @@ func (w *Worker) runWorkers() {
 	}
 }
 
+
 func NewClient() *Worker {
 	w := &Worker{
 		Client: make(chan *Customer),
-		index:  make(map[int64]*Count),
+		Index:  make(map[int64]*Count),
+		//Task:   make(chan []*mysql.ClientList),
 	}
 	w.ctx, w.cancel = context.WithCancel(context.Background())
 	w.initWorker()

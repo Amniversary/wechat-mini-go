@@ -55,8 +55,8 @@ func GetAppInfo(recordId int64) (*WcAuthorizationList, bool) {
 }
 
 //TODO: 获取用户列表
-func GetUserList(recordId int64) ([]ClientList, bool) {
-	var list []ClientList
+func GetUserList(recordId int64) ([]*ClientList, bool) {
+	var list []*ClientList
 	nTime := time.Now().Unix()
 	statTime := nTime - (86400 * 2)
 	num := strconv.FormatInt(recordId, 10)
